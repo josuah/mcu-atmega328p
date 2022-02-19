@@ -1,0 +1,10 @@
+*.o
+*.elf
+*.eps
+*.png
+*.pdf
+*.bak
+*.asm
+*.hex
+*.lst
+*.map
