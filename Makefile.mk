@@ -1,5 +1,3 @@
-DEVICE = atmega328p
-
 OBJCOPY = avr-objcopy
 OBJDUMP = avr-objdump
 CC = avr-gcc -mmcu=${DEVICE}
