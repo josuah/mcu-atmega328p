@@ -1,6 +1,6 @@
 OBJCOPY = avr-objcopy
 OBJDUMP = avr-objdump
-CC = avr-gcc -mmcu=${DEVICE}
+CC = avr-gcc -mmcu=atmega328p
 AR = avr-ar
 GDB = avr-gdb
 AVRDUDE = avrdude -p atmega328p -c arduino -b 115200
