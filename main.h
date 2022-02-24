@@ -1,18 +1,9 @@
-#include <stddef.h>
-#include <stdint.h>
-
-#define STATIC_ASSERT(exp) typedef char failed[(exp) ? 1 : -1]
-
-#define CPU_FREQ	16000000ul
-
-/* assert that an expression is true or halt the program */
-void runtime_assert(int expr);
-
-/* set interrupts */
-void sei(void);
-
-/* clear interrupts */
-void cli(void);
+#define BITMASK32(o)		(o == 31 ? 0xFFFFFFFF : (1u << (o + 1)) - 1)
+#define BITMASK(fld)		(BITMASK32(fld##_Msb) - BITMASK32(fld##_Lsb))
+#define BITS(fld, val)		(fld##_##val << fld##_Lsb)
+#define BIT(fld)		(1u << fld)
+#define BITREAD(dev, reg, fld)	(dev->reg >> dev##_##reg##_##fld##_Lsb)
+#define BITWRITE(reg, fld, val)	(reg = (reg & ~BITMASK(fld)) | BITS(fld, val))
 
 /* halt the execution */
 void __stop_program(void);
