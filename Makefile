@@ -1,6 +1,6 @@
 # thank you N. for the first stone
 
-MCU= atmega328p
+MCU = atmega328p
 
 BIN= blinky-asm
 OBJ= ${BIN:=.o}

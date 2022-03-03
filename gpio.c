@@ -1,4 +1,6 @@
-#include <zmcu.atmega328p.h>
+#include "binary.h"
+#include "registers.h"
+#include "functions.h"
 
 void
 gpio_init(void)
