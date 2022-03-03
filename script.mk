@@ -1,15 +1,16 @@
 OBJCOPY = avr-objcopy
 OBJDUMP = avr-objdump
+CPP = avr-cpp
 CC = avr-gcc -mmcu=atmega328p
+AS = avr-as
+LD = avr-ld
 AR = avr-ar
 GDB = avr-gdb
 AVRDUDE = avrdude -p atmega328p -c arduino -b 115200
-
 SDK_OBJ = ${SDK}/init.o ${SDK}/gpio.o ${SDK}/i2c.o ${SDK}/timer.o \
 	${SDK}/uart.o ${SDK}/assert.o
 SDK_CFLAGS = -ffunction-sections -fdata-sections
-SDK_LDFLAGS = -Wl,-Map=firmware.map -Wl,--gc-sections -T${SDK}/script.ld \
-	-nostartfiles -nostdlib -static
+SDK_LDFLAGS = -Map=firmware.map --gc-sections -T${SDK}/script.ld -nostdlib -static
 SDK_CPPFLAGS = -I${SDK}
 SDK_ASFLAGS = -I${SDK}
 
@@ -45,7 +46,7 @@ flash.openocd: firmware.hex
 .S.o:
 
 .c.s:
-	${CC} ${SDK_CPPFLAGS} ${CPPFLAGS} ${SDK_CFLAGS} ${CFLAGS} -c -o $@ $<
+	${CC} ${SDK_CPPFLAGS} ${CPPFLAGS} ${SDK_CFLAGS} ${CFLAGS} -S -o $@ $<
 
 .S.s:
 	${CPP} ${SDK_CPPFLAGS} ${CPPFLAGS} -o $@ $<
