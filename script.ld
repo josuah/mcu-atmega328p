@@ -15,7 +15,6 @@ SECTIONS {
 		KEEP(*(.data.__vectors))
 		. = ALIGN(4);
 		*(.text .text.*)
-		KEEP(*(.text.interrupt_*))
 		*(.rodata .rodata.*)
 	} > ROM
 

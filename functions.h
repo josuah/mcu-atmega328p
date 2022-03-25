@@ -1,6 +1,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/** GPIO **/
+
 /* setup GPIO (builtin led mostly) */
 void gpio_init(void);
 
@@ -13,18 +15,20 @@ void gpio_set(uint8_t *port, uint8_t mask);
 /* set pin down for all bits up in mask */
 void gpio_clr(uint8_t *port, uint8_t mask);
 
-/* setup and enable I2C */
+/** I²C **/
+
+/* setup and enable I²C */
 void i2c_init(void);
 
-/* block on reading `buf` of size `sz` from configured I2C bus from
+/* block on reading `buf` of size `sz` from configured I²C bus from
  * device at address `addr` */
 int i2c_read(uint8_t addr, uint8_t *buf, size_t sz);
 
-/* block on writing `buf` of size `sz` to configured I2C bus to
+/* block on writing `buf` of size `sz` to configured I²C bus to
  * device at address `addr` */
 int i2c_write(uint8_t addr, uint8_t const *buf, size_t sz);
 
-/* write an empty message for every valid address on configured I2C bus
+/* write an empty message for every valid address on configured I²C bus
  * until someone answers, and save its address for next call to `addr`:
  * for (uint8_t addr = 0; i2c_scan(&addr);) printf("0x%2X.n", addr); */
 int i2c_scan(uint8_t *addr);
@@ -47,18 +51,18 @@ void gpio_set(uint8_t *port, uint8_t mask);
 /* set pin down for all bits up in mask */
 void gpio_clr(uint8_t *port, uint8_t mask);
 
-/* setup and enable I2C */
+/* setup and enable I²C */
 void i2c_init(void);
 
-/* block on reading `buf` of size `sz` from configured I2C bus from
+/* block on reading `buf` of size `sz` from configured I²C bus from
  * device at address `addr` */
 int i2c_read(uint8_t addr, uint8_t *buf, size_t sz);
 
-/* block on writing `buf` of size `sz` to configured I2C bus to
+/* block on writing `buf` of size `sz` to configured I²C bus to
  * device at address `addr` */
 int i2c_write(uint8_t addr, uint8_t const *buf, size_t sz);
 
-/* write an empty message for every valid address on configured I2C bus
+/* write an empty message for every valid address on configured I²C bus
  * until someone answers, and save its address for next call to `addr`:
  * for (uint8_t addr = 0; i2c_scan(&addr);) printf("0x%2X.n", addr); */
 int i2c_scan(uint8_t *addr);
