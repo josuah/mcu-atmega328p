@@ -1,6 +1,6 @@
 file firmware.elf
 target extended-remote :3333
 load
-layout asm
+layout src
 layout reg
 monitor reset halt

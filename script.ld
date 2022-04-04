@@ -26,7 +26,7 @@ SECTIONS {
 
 	.bss ADDR(.data) + SIZEOF (.data) : AT (ADDR (.bss)) {
 		PROVIDE(__bss_start = .);
-		*(.bss)
+		*(.bss .bss.*)
 		PROVIDE(__bss_end = .);
 	} > RAM
 
