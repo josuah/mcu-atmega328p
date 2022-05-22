@@ -1,4 +1,4 @@
-#include <atmega328p.h>
+#include "registers.h"
 
 #define XL	r26
 #define XH	r27
@@ -86,32 +86,32 @@
 .global	__vectors
 	__vectors:
 
-	jmp __reset_handler					/* 0x00 */
-	jmp __vector_2						/* 0x04 */
-	jmp __vector_3						/* 0x08 */
-	jmp __vector_4						/* 0x0C */
-	jmp __vector_5						/* 0x10 */
-	jmp __vector_6						/* 0x14 */
-	jmp __vector_7						/* 0x18 */
-	jmp __vector_8						/* 0x1C */
-	jmp __vector_9						/* 0x20 */
-	jmp __vector_10						/* 0x24 */
-	jmp __vector_11						/* 0x28 */
-	jmp __vector_12						/* 0x2C */
-	jmp __vector_13						/* 0x30 */
-	jmp __vector_14						/* 0x34 */
-	jmp __vector_15						/* 0x38 */
-	jmp __vector_16						/* 0x3C */
-	jmp __vector_17						/* 0x40 */
-	jmp __vector_18						/* 0x44 */
-	jmp __vector_19						/* 0x48 */
-	jmp __vector_20						/* 0x4C */
-	jmp __vector_21						/* 0x50 */
-	jmp __vector_22						/* 0x54 */
-	jmp __vector_23						/* 0x58 */
-	jmp __vector_24						/* 0x5C */
-	jmp __vector_25						/* 0x60 */
-	jmp __vector_26						/* 0x64 */
+	rjmp __reset_handler					/* 0x00 */
+	rjmp __vector_2						/* 0x04 */
+	rjmp __vector_3						/* 0x08 */
+	rjmp __vector_4						/* 0x0C */
+	rjmp __vector_5						/* 0x10 */
+	rjmp __vector_6						/* 0x14 */
+	rjmp __vector_7						/* 0x18 */
+	rjmp __vector_8						/* 0x1C */
+	rjmp __vector_9						/* 0x20 */
+	rjmp __vector_10					/* 0x24 */
+	rjmp __vector_11					/* 0x28 */
+	rjmp __vector_12					/* 0x2C */
+	rjmp __vector_13					/* 0x30 */
+	rjmp __vector_14					/* 0x34 */
+	rjmp __vector_15					/* 0x38 */
+	rjmp __vector_16					/* 0x3C */
+	rjmp __vector_17					/* 0x40 */
+	rjmp __vector_18					/* 0x44 */
+	rjmp __vector_19					/* 0x48 */
+	rjmp __vector_20					/* 0x4C */
+	rjmp __vector_21					/* 0x50 */
+	rjmp __vector_22					/* 0x54 */
+	rjmp __vector_23					/* 0x58 */
+	rjmp __vector_24					/* 0x5C */
+	rjmp __vector_25					/* 0x60 */
+	rjmp __vector_26					/* 0x64 */
 
 
 .section .text
@@ -147,7 +147,7 @@
 .global	__stop_program
 	__stop_program:
  0:
-	jmp 0b
+	rjmp 0b
 
 .global	sei
 	sei:
@@ -206,7 +206,7 @@
 	/* fallthrough */
  __call_main:
 	call main
-	jmp __stop_program
+	rjmp __stop_program
 
 
 .section .fuses
