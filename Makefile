@@ -1,5 +1,5 @@
 CFLAGS = -Wall -Wextra -std=c99 -pedantic -ggdb
 OBJ = example.o
 SDK = .
-include ${SDK}/script.mk
+include ${SDK}/Makefile.inc
 flash: flash.avrdude

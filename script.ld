@@ -10,7 +10,6 @@ ENTRY(__reset_handler)
 
 SECTIONS {
 	.text : {
-		KEEP(*(.data.__bootloader))
 		KEEP(*(.data.__stack_pointer))
 		KEEP(*(.data.__vectors))
 		. = ALIGN(4);
