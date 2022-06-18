@@ -1,9 +1,16 @@
-include config.mk
+OBJCOPY = avr-objcopy
+OBJDUMP = avr-objdump
+CPP = avr-cpp -D__AVR_ATmega328P__
+CC = avr-gcc -mmcu=atmega328p
+AS = avr-as -mmcu=atmega328p
+LD = avr-ld -L/usr/local/avr/lib/avr5
+AR = avr-ar
+GDB = avr-gdb
+AVRDUDE = avrdude -p atmega328p -c arduino -b 115200 -P ${AVRDUDE_PORT}
+AVRDUDE_PORT = /dev/ttyU0
 
-SDK_CFLAGS = -ffunction-sections -fdata-sections
-SDK_LDFLAGS = -Map=firmware.map --gc-sections -T${SDK}/script.ld -nostdlib -static
-SDK_CPPFLAGS = -I${SDK}
-SDK_ASFLAGS = -I${SDK}
+SDK_OBJ = ${SDK}/init.o ${SDK}/gpio.o ${SDK}/i2c.o ${SDK}/timer.o \
+	${SDK}/uart.o ${SDK}/asm.o
 
 all: firmware.elf firmware.asm
 
@@ -16,42 +23,26 @@ ocd:
 gdb:
 	${GDB} -x ${SDK}/script.gdb
 
-flash.avrdude: firmware.hex
-	${AVRDUDE} -qu -P ${PORT} -U flash:w:firmware.hex
-
-flash.dfuutil: firmware.bin
-	${DFUUTIL} -D firmware.bin
-
-flash.mount: firmware.uf2
-	mount /mnt && cp firmware.uf2 /mnt
-
-flash.openocd: firmware.hex
-	${OPENOCD} -c 'program firmware.hex verify reset exit'
-
-firmware.elf: ${SDK_OBJ} ${OBJ}
-	${LD} ${SDK_LDFLAGS} ${LDFLAGS} -o $@ ${SDK_OBJ} ${OBJ}
+flash: firmware.hex
+	${AVRDUDE} -qu -U flash:w:firmware.hex
 
 .SUFFIXES: .c .s .S .o .elf .bin .asm .hex .uf2
-
 .S.o:
 
+firmware.elf: ${SDK_OBJ} ${OBJ}
+	${LD} ${LDFLAGS} -Map=firmware.map --gc-sections -T${SDK}/script.ld -nostdlib -static -o $@ ${SDK_OBJ} ${OBJ}
+
 .c.o:
-	${CC} ${SDK_CPPFLAGS} ${CPPFLAGS} ${SDK_CFLAGS} ${CFLAGS} -c -o $@ $<
+	${CC} ${CPPFLAGS} -I${SDK} ${CFLAGS} -ffunction-sections -fdata-sections -c -o $@ $<
 
 .S.s:
-	${CPP} ${SDK_CPPFLAGS} ${CPPFLAGS} -o $@ $<
+	${CPP} ${CPPFLAGS} -I${SDK} -o $@ $<
 
 .s.o:
-	${AS} ${SDK_CPPFLAGS} ${CPPFLAGS} ${SDK_ASFLAGS} ${ASFLAGS} -c -o $@ $<
+	${AS} ${CPPFLAGS} -I${SDK} ${ASFLAGS} -c -o $@ $<
 
 .elf.asm:
 	${OBJDUMP} -z -d $< >$@
 
 .elf.hex:
 	${OBJCOPY} -j .text -j .data -O ihex $< $@
-
-.elf.bin:
-	${OBJCOPY} -j .text -j .data -O binary $< $@
-
-.elf.uf2:
-	elf2uf2 $< $@
