@@ -11,9 +11,11 @@
 #define FPL	YL
 #define FPH	YH
 
-
 .macro	.isr vector handler
 
+	/* avr-libc jumps to 0x0000 instead of halting */
+.set	\handler, __null_handler
+.weak	\handler
 
 .global	\vector
 	\vector:
@@ -73,15 +75,10 @@
 	/* clear interrupt flag and return */
 	reti
 
-	/* avr-libc jumps to 0x0000 instead of halting */
-.set	\handler, __stop_program
-.weak	\handler
-
 .endm
 
 
 .section .vectors
-
 
 .global	__vectors
 	__vectors:
@@ -116,7 +113,6 @@
 
 .section .text
 
-
 .isr	__vector_2 interrupt_int0
 .isr	__vector_3 interrupt_int1
 .isr	__vector_4 interrupt_pcint0
@@ -143,12 +139,6 @@
 .isr	__vector_25 interrupt_twi
 .isr	__vector_26 interrupt_spm_ready
 
-
-.global	__stop_program
-	__stop_program:
- 0:
-	rjmp 0b
-
 .global	sei
 	sei:
 
@@ -160,67 +150,3 @@
 
 	cli
 	ret
-
-.global	__reset_handler
-	__reset_handler:
-
-	clr zero
-
-	/* fallthrough */
- __copy_data:
-	ldi ZL, lo8(__data_load_start)
-	ldi ZH, hi8(__data_load_start)
-	ldi XL, lo8(__data_start)
-	ldi XH, hi8(__data_start)
-
-	rjmp 1f
- 0:
-	/* Load a byte from Program Memory (ROM) */
-	lpm r0, Z+
-
-	/* Store it to the RAM */
-	st X+, r0
- 1:
-	/* done yet? */
-	cpi XL, lo8(__data_end)
-	brne 0b
-	cpi XH, hi8(__data_end)
-	brne 0b
-
-	/* fallthrough */
- __clear_bss:
-	ldi ZH, hi8(__bss_start)
-	ldi ZL, lo8(__bss_start)
-
-	rjmp 1f
- 0:
-	/* fill the stack with one more 0 */
-	st Z+, zero
- 1:
-	/* done yet? */
-	cpi ZL, lo8(__bss_end)
-	brne 0b
-	cpi ZH, hi8(__bss_end)
-	brne 0b
-
-	/* fallthrough */
- __call_main:
-	call main
-	rjmp __stop_program
-
-
-.section .fuses
-
-
-.weak	__fuses
-	__fuses:
-
-	/* low fuse bits */
-.byte	LFUSE(FON*CKDIV8 | FOFF*CKOUT | SUT_SLOW | CKSEL_CERAMIC_CALIB)
-
-	/* high fuse bits */
-.byte	HFUSE(FOFF*RSTDISBL | FOFF*DWEN | FON*SPIEN | FOFF*WDTON |
-	FOFF*EESAVE | BOOTSZ_2048 | FOFF*BOOTRST)
-
-	/* extended fuse bits */
-.byte	EFUSE(BODLEVEL_OFF)

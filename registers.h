@@ -1,4 +1,3 @@
-
 /* ADC */
 
 /* ADC pin multiplexing control */
@@ -149,7 +148,7 @@
 
 /* two-wire status register */
 #define TWSR		(*(uint8_t volatile *)0xB9)
-#define TWS		B11111000
+#define TWS		0xF8
 #define TWPS(x)		((x) << 0)
 
 /* two-wire bit rate regsiter */
@@ -182,13 +181,13 @@
 #define TCCR0A		(*(uint8_t volatile *)0x44)
 #define COM0A		(1 << 6)
 #define COM0B		(1 << 4)
-#define WGM0A(n)	((n) & B00000011)
+#define WGM0A(n)	((n) & 0x03)
 
 /* timer/counter 0 control register B */
 #define TCCR0B		(*(uint8_t volatile *)0x45)
 #define FOC0A		(1 << 7)
 #define FOC0B		(1 << 6)
-#define WGM0B(n)	(((n) & B00000100) << 1)
+#define WGM0B(n)	(((n) & 0x04) << 1)
 #define CS0(x)		((x) << 0)
 
 /* timer/counter 0 interrupt mask register */
@@ -213,13 +212,13 @@
 #define TCCR1A		(*(uint8_t volatile *)0x80)
 #define COM1A(x)	((x) << 6)
 #define COM1B(x)	((x) << 4)
-#define WGM1A(n)	((n) & B00000011)
+#define WGM1A(n)	((n) & 0x03)
 
 /* timer/counter 1 control register B */
 #define TCCR1B		(*(uint8_t volatile *)0x81)
 #define ICNC1		(1 << 7)
 #define ICES1		(1 << 6)
-#define WGM1B(n)	(((n) & B00001100) << 1) 
+#define WGM1B(n)	(((n) & 0x0C) << 1) 
 #define CS1(x)		((x) << 0)
 
 /* timer/counter 1 control register C */
@@ -252,13 +251,13 @@
 #define TCCR2A		(*(uint8_t volatile *)0xB0)
 #define COM2A		(1 << 6)
 #define COM2B		(1 << 4)
-#define WGM2A(n)	((n) & B00000011)
+#define WGM2A(n)	((n) & 0x03)
 
 /* timer/counter 2 control register B */
 #define TCCR2B		(*(uint8_t volatile *)0xB1)
 #define FOC2A		(1 << 7)
 #define FOC2B		(1 << 6)
-#define WGM2B(n)	((n) & B00001000) 
+#define WGM2B(n)	((n) & 0x08) 
 #define CS2(x)		((x) << 0)
 
 /* timer/counter 2 counter value */

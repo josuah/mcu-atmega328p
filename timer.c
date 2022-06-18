@@ -1,4 +1,4 @@
-#include "binary.h"
+#include "libc.h"
 #include "registers.h"
 #include "functions.h"
 
@@ -34,7 +34,7 @@ timer0_init(int cs, int mode)
 		out = COM_TOGGLE;
 		break;
 	default:
-		runtime_assert(!"wrong WGM0 mode");
+		assert(!"wrong WGM0 mode");
 	}
 	TCCR0A = WGM0A(mode) | COM1A(out);
 	TCCR0B = WGM0B(mode) | CS0(cs);
@@ -67,7 +67,7 @@ timer1_init(int cs, int mode)
 		out = COM_PULSE;
 		break;
 	default:
-		runtime_assert(!"wrong WGM1 mode");
+		assert(!"wrong WGM1 mode");
 	}
 	TCCR1A = WGM1A(mode) | COM1A(out);
 	TCCR1B = WGM1B(mode) | CS1(cs);
@@ -90,7 +90,7 @@ timer2_init(int cs, int mode)
 		out = COM_TOGGLE;
 		break;
 	default:
-		runtime_assert(!"wrong WGM2 mode");
+		assert(!"wrong WGM2 mode");
 	}
 	TCCR2A = WGM2A(mode) | COM1A(out);
 	TCCR2B = WGM2B(mode) | CS2(cs);

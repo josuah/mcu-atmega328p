@@ -33,11 +33,10 @@ firmware.elf: ${SDK_OBJ} ${OBJ}
 
 .SUFFIXES: .c .s .S .o .elf .bin .asm .hex .uf2
 
-.c.o:
 .S.o:
 
-.c.s:
-	${CC} ${SDK_CPPFLAGS} ${CPPFLAGS} ${SDK_CFLAGS} ${CFLAGS} -S -o $@ $<
+.c.o:
+	${CC} ${SDK_CPPFLAGS} ${CPPFLAGS} ${SDK_CFLAGS} ${CFLAGS} -c -o $@ $<
 
 .S.s:
 	${CPP} ${SDK_CPPFLAGS} ${CPPFLAGS} -o $@ $<

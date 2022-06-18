@@ -1,4 +1,6 @@
-#include <avr/io.h>
+#include "libc.h"
+#include "registers.h"
+#include "functions.h"
 
 int
 main(void)
@@ -9,7 +11,7 @@ main(void)
 	for (;;) {
 		/* led toggle */
 		PORTB &= ~(1<<5);
-		for (uint32_t u=0; u<0x10000; u++);
+		for (uint32_t u=0; u < 0x1000; u++);
 	}
 
 	return 0;

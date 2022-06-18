@@ -1,11 +1,9 @@
-#include <stddef.h>
-#include <stdint.h>
 
 #define CPU_FREQ	16000000
 
 
-/* halt the execution */
-void __stop_program(void);
+extern void sei(void);
+extern void cli(void);
 
 
 /** GPIO **/

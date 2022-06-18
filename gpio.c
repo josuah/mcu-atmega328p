@@ -1,4 +1,4 @@
-#include "binary.h"
+#include "libc.h"
 #include "registers.h"
 #include "functions.h"
 
@@ -19,10 +19,4 @@ void
 gpio_clr(uint8_t *port, uint8_t mask)
 {
 	*port &= ~mask;
-}
-
-void
-gpio_led(int on)
-{
-	PORTB = (on) ? (PORTB | 1<<5) : (PORTB & ~(1<<5));
 }

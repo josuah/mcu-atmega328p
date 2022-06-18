@@ -1,4 +1,4 @@
-#include "binary.h"
+#include "libc.h"
 #include "registers.h"
 #include "functions.h"
 
@@ -19,7 +19,6 @@ enum {
 	RD_DATA_ACK = 0x50,
 	RD_DATA_NACK = 0x58,
 	ARB_LOST = 0x38,
-
 };
 
 #define kHz	1000
@@ -74,7 +73,7 @@ i2c_read(uint8_t addr, uint8_t *buf, size_t sz)
 
 	i2c_start();
 	while (ctx.status == 1);
-	runtime_assert(ctx.status == -1 || ctx.i == ctx.sz);
+	assert(ctx.status == -1 || ctx.i == ctx.sz);
 	return ctx.status;
 }
 
@@ -89,7 +88,7 @@ i2c_write(uint8_t addr, uint8_t const *buf, size_t sz)
 
 	i2c_start();
 	while (ctx.status == 1);
-	runtime_assert(ctx.status == -1 || ctx.i == ctx.sz);
+	assert(ctx.status == -1 || ctx.i == ctx.sz);
 	return ctx.status;
 }
 
@@ -105,7 +104,7 @@ i2c_scan(uint8_t *addr)
 void
 interrupt_twi(void)
 {
-	switch (TWSR & B11111000) {
+	switch (TWSR & 0xF8) {
 	case START_OK:
 	case REP_START_OK:
 		TWDR = ctx.addr;
