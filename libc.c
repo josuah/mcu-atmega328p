@@ -19,11 +19,20 @@ memcpy(void *mem, void const *src, size_t sz)
 }
 
 size_t
-strlen(char const *str)
+strlen(char const *s)
 {
-	for (size_t len = 0 ;; str++, len++)
-		if (*str == '\0')
+	for (size_t len = 0 ;; s++, len++)
+		if (*s == '\0')
 			return len;
+}
+
+char *
+strchr(const char *s, int c)
+{
+	for (; *s != c; s++)
+		if (*s == '\0')
+			return NULL;
+	return (char *)s;
 }
 
 /* <ctype.h> */
@@ -119,36 +128,4 @@ int
 toupper(int c)
 {
 	return (c >= 'a' && c <= 'z') ? (c - 'a' + 'A') : (c);
-}
-
-/* <util.h> */
-
-static char const *digits = "0123456789ABCDEF";
-
-char *
-fmtint(char *s, size_t sz, int64_t i64, uint8_t b)
-{
-	assert(b <= strlen(digits));
-
-	s += sz;
-	*--s = '\0';
-	if (i64 == 0) {
-		*--s = digits[0];
-		return s;
-	}
-	for (uint64_t u64 = (unsigned)(i64 > 0 ? i64 : -i64); u64 > 0; u64 /= b)
-		*--s = digits[u64 % b];
-	if (i64 < 0)
-		*--s = '-';
-	return s;
-}
-
-uint32_t
-htonl(uint32_t u32)
-{
-	uint8_t buf[4] = {
-		(uint8_t)(u32 << 24), (uint8_t)(u32 << 16),
-		(uint8_t)(u32 << 8), (uint8_t)(u32 << 0)
-	};
-	return *(uint32_t *)buf;
 }

@@ -22,6 +22,13 @@ typedef signed long	int64_t;
 #define UINT32_MAX	0xFFFFFFFFul
 #define UINT64_MAX	0xFFFFFFFFFFFFFFFFull
 
+/* <stdarg.h> */
+
+typedef __builtin_va_list va_list;
+#define va_start(va, lastarg)	__builtin_va_start((va), lastarg)
+#define va_end(va)		__builtin_va_end((va))
+#define va_arg(va, type)	__builtin_va_arg((va), type)
+
 /* <time.h> */
 
 typedef uint64_t	time_t;
@@ -30,17 +37,15 @@ typedef uint64_t	time_t;
 
 void *memset(void *mem, int val, size_t sz);
 size_t strlen(char const *str);
+char * strchr(const char *s, int c);
 
 /* <assert.h> */
 
 #ifdef NDEBUG
 #define assert(expr)	0
 #else /* endless loop visible in-place with a debugger */
-#define assert(expr)	if (!(expr)) for (;;) alert()
+#define assert(expr)	if (!(expr)) for (char volatile i ;; i++)
 #endif
-
-/* provided by the programmer for blinking a led or anything */
-void alert(void);
 
 /* <ctype.h> */
 
@@ -55,13 +60,5 @@ int isupper(int c);
 int isxdigit(int c);
 int tolower(int c);
 int toupper(int c);
-
-/* <util.h> */
-
-char *fmtint(char *s, size_t sz, int64_t i64, uint8_t b);
-
-/* <arpa/inet.h> */
-
-uint32_t htonl(uint32_t u32);
 
 #endif
