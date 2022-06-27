@@ -1,4 +1,4 @@
-#include "registers.h"
+#include "libatmega328p.h"
 
 #define XL	r26
 #define XH	r27
@@ -12,77 +12,20 @@
 #define FPH	YH
 
 .macro	.isr vector handler
-
-	/* avr-libc jumps to 0x0000 instead of halting */
 .set	\handler, __null_handler
 .weak	\handler
-
 .global	\vector
 	\vector:
-
-	/* save r0 and r1 first: we use them next */
-	push r0
-	push r1
-
-	/* save the status register onto the stack */
-	in r0, 0x3F /* SREG */
-	push r0
-
-	/* fill the "zero" register with 0 */
-	clr zero
-
-	/* save scratch registers as they might have been in use */
-	push r18
-	push r19
-	push r20
-	push r21
-	push r22
-	push r23
-	push r24
-	push r25
-	push r26
-	push r27
-	/* r28 and r29 are used as a stack pointer */
-	push r30
-	push r31
-
-	/* call the actual handler: a normal C function can be used */
+	call __isr_enter
 	call \handler
-
-	/* restore scratch registers */
-	pop r31
-	pop r30
-	/* r29 and r28 are used as a stack pointer */
-	pop r27
-	pop r26
-	pop r25
-	pop r24
-	pop r23
-	pop r22
-	pop r21
-	pop r20
-	pop r19
-	pop r18
-
-	/* restore the status register */
-	pop r0
-	out 0x3F, r0 /* SREG */
-
-	/* restore r1 and r0 */
-	pop r1
-	pop r0
-
-	/* clear interrupt flag and return */
+	call __isr_leave
 	reti
-
 .endm
-
 
 .section .vectors
 
 .global	__vectors
 	__vectors:
-
 	rjmp __reset_handler					/* 0x00 */
 	rjmp __vector_2						/* 0x04 */
 	rjmp __vector_3						/* 0x08 */
@@ -139,14 +82,71 @@
 .isr	__vector_25 interrupt_twi
 .isr	__vector_26 interrupt_spm_ready
 
+.global	__isr_enter
+	__isr_enter:
+
+	/* save r0 and r1 first: we use them next */
+	push r0
+	push r1
+
+	/* save the status register onto the stack */
+	in r0, 0x3F /* SREG */
+	push r0
+
+	/* fill the "zero" register with 0 */
+	clr zero
+
+	/* save scratch registers as they might have been in use */
+	push r18
+	push r19
+	push r20
+	push r21
+	push r22
+	push r23
+	push r24
+	push r25
+	push r26
+	push r27
+	/* r28 and r29 are used as a stack pointer */
+	push r30
+	push r31
+
+	ret
+
+.global	__isr_leave
+	__isr_leave:
+
+	/* restore scratch registers */
+	pop r31
+	pop r30
+	/* r29 and r28 are used as a stack pointer */
+	pop r27
+	pop r26
+	pop r25
+	pop r24
+	pop r23
+	pop r22
+	pop r21
+	pop r20
+	pop r19
+	pop r18
+
+	/* restore the status register */
+	pop r0
+	out 0x3F, r0 /* SREG */
+
+	/* restore r1 and r0 */
+	pop r1
+	pop r0
+
+	ret
+
 .global	sei
 	sei:
-
 	sei
 	ret
 
 .global	cli
 	cli:
-
 	cli
 	ret

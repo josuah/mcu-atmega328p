@@ -2,8 +2,10 @@
 #include "libatmega328p.h"
 
 
-/// INIT ///
+#define kHz		1000
 
+
+/// INIT ///
 
 extern int main(void);
 extern char __data_start, __data_end, __data_load_start;
@@ -21,11 +23,14 @@ __reset_handler(void)
 }
 
 /* so that the debugger can immediately see which fault was triggered */
-void __null_handler(void)               { for (int volatile i = 0;; i++); }
+void
+__null_handler(void)
+{
+	for (int volatile i = 0;; i++);
+}
 
 
 /// ADC ///
-
 
 #if 0
 
@@ -61,11 +66,8 @@ interrupt_adc(void)
 	adc_status = 0;
 }
 
-#endif
-
 
 /// GPIO ///
-
 
 void
 gpio_init(void)
@@ -89,28 +91,25 @@ gpio_clr(uint8_t *port, uint8_t mask)
 
 /// I2C ///
 
-
 enum {
-	START_OK = 0x08,
-	REP_START_OK = 0x10,
-	WR_SLA_ACK = 0x18,
-	WR_SLA_NACK = 0x20,
-	WR_DATA_ACK = 0x28,
-	WR_DATA_NACK = 0x30,
-	RD_SLA_ACK = 0x40,
-	RD_SLA_NACK = 0x48,
-	RD_DATA_ACK = 0x50,
-	RD_DATA_NACK = 0x58,
-	ARB_LOST = 0x38,
+	I2C_START_OK = 0x08,
+	I2C_REP_START_OK = 0x10,
+	I2C_WR_SLA_ACK = 0x18,
+	I2C_WR_SLA_NACK = 0x20,
+	I2C_WR_DATA_ACK = 0x28,
+	I2C_WR_DATA_NACK = 0x30,
+	I2C_RD_SLA_ACK = 0x40,
+	I2C_RD_SLA_NACK = 0x48,
+	I2C_RD_DATA_ACK = 0x50,
+	I2C_RD_DATA_NACK = 0x58,
+	I2C_ARB_LOST = 0x38,
 };
 
-#define kHz	1000
-
-#define	STOP	(TWINT | TWSTO)
-#define	CONT	(TWINT | TWEN | TWIE)
-#define	START	(CONT | TWSTA)
-#define	ACK	(CONT | TWEA)
-#define	NACK	(CONT)
+#define	I2C_STOP	(TWINT | TWSTO)
+#define	I2C_CONT	(TWINT | TWEN | TWIE)
+#define	I2C_START	(I2C_CONT | TWSTA)
+#define	I2C_ACK		(I2C_CONT | TWEA)
+#define	I2C_NACK	(I2C_CONT)
 
 #ifndef I2C_SCL_FREQ
 #define I2C_SCL_FREQ	(10*kHz)
@@ -186,43 +185,43 @@ void
 interrupt_twi(void)
 {
 	switch (TWSR & 0xF8) {
-	case START_OK:
-	case REP_START_OK:
+	case I2C_START_OK:
+	case I2C_REP_START_OK:
 		TWDR = i2c_addr;
-		TWCR = CONT;
+		TWCR = I2C_CONT;
 		break;
-	case ARB_LOST:
+	case I2C_ARB_LOST:
 		i2c_status = -1;
 		break;
-	case WR_SLA_ACK:
-	case WR_DATA_ACK:
+	case I2C_WR_SLA_ACK:
+	case I2C_WR_DATA_ACK:
 		if (i2c_i < i2c_sz) {
 			TWDR = i2c_buf[i2c_i++];
-			TWCR = CONT;
+			TWCR = I2C_CONT;
 		}else{
-			TWCR = STOP;
+			TWCR = I2C_STOP;
 			i2c_status = 0;
 		}
 		break;
-	case WR_SLA_NACK:
-	case WR_DATA_NACK:
+	case I2C_WR_SLA_NACK:
+	case I2C_WR_DATA_NACK:
+		TWCR = I2C_STOP;
+		i2c_status = -1;
+		break;
+	case I2C_RD_SLA_ACK:
+		TWCR = (i2c_i + 1 < i2c_sz) ? I2C_ACK : I2C_NACK;
+		break;
+	case I2C_RD_SLA_NACK:
 		TWCR = STOP;
 		i2c_status = -1;
 		break;
-	case RD_SLA_ACK:
-		TWCR = (i2c_i + 1 < i2c_sz) ? ACK : NACK;
-		break;
-	case RD_SLA_NACK:
-		TWCR = STOP;
-		i2c_status = -1;
-		break;
-	case RD_DATA_ACK:
+	case I2C_RD_DATA_ACK:
 		i2c_buf[i2c_i++] = TWDR;
-		TWCR = (i2c_i + 1 < i2c_sz) ? ACK : NACK;
+		TWCR = (i2c_i + 1 < i2c_sz) ? I2C_ACK : I2C_NACK;
 		break;
-	case RD_DATA_NACK:
+	case I2C_RD_DATA_NACK:
 		i2c_buf[i2c_i++] = TWDR;
-		TWCR = STOP;
+		TWCR = I2C_STOP;
 		i2c_status = 0;
 		break;
 	}
@@ -230,7 +229,6 @@ interrupt_twi(void)
 
 
 /// TIMER ///
-
 
 /* how many bits is the internal timer register? */
 #define TIMER_REG_LEN	(1ull << 8)
@@ -363,21 +361,14 @@ interrupt_timer2_ovf(void)
 
 /// UART ///
 
-
-enum {
-	OFF = 0, ON = 1,
-};
-
-#ifndef USART_BAUDRATE
-#define USART_BAUDRATE 9600
-#endif
+#define UART_BAUDRATE 9600
 
 static uint8_t const *uart_buf;
 static size_t uart_sz, uart_i;
 static volatile int uart_status;
 
 static void
-set_interrupt(int onoff)
+uart_set_interrupt(int onoff)
 {
 	/* Usart Data Register empty Interrupt Enable (ON/OFF) */
 	UCSR0B = (onoff) ? (UCSR0B | UDRIE0) : (UCSR0B & ~UDRIE0);
@@ -396,7 +387,7 @@ uart_init(void)
 	UCSR0C = UCSZ0C(3);
 
 	/* set the baud rate after enabling the transmitter */
-	UBRR0 = CPU_FREQ / 16 / USART_BAUDRATE - 1;
+	UBRR0 = CPU_FREQ / 16 / UART_BAUDRATE - 1;
 }
 
 uint8_t
@@ -417,7 +408,7 @@ uart_write(uint8_t const *buf, size_t sz)
 	uart_sz = sz;
 	uart_i = 0;
 
-	set_interrupt(ON);
+	uart_set_interrupt(1);
 	while (uart_status == 1);
 	return uart_status;
 }
@@ -427,9 +418,11 @@ interrupt_usart_udre(void)
 {
 	if (uart_i == uart_sz) {
 		uart_status = 0;
-		set_interrupt(OFF);
+		uart_set_interrupt(0);
 		return;
 	}
 	/* fill the data register which queue the write in hardware */
 	UDR0 = uart_buf[uart_i++];
 }
+
+#endif

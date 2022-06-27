@@ -1,4 +1,8 @@
-/* ADC */
+#ifndef LIBATMEGA328P_H
+#define LIBATMEGA328P_H
+
+
+/// ADC ///
 
 /* ADC pin multiplexing control */
 #define ADMUX		(*(uint8_t volatile *)0x7C)
@@ -36,7 +40,7 @@
 #define ADCH		(*(uint8_t volatile *)0x79)
 
 
-/* FUSES */
+/// FUSES ///
 
 /* usage:
  *	.global	.fuses
@@ -101,7 +105,7 @@
 #define BODLEVEL_5V	(1*BODLEVEL2 | 0*BODLEVEL1 | 0*BODLEVEL0)
 
 
-/* GPIO */
+/// GPIO ///
 
 /* port B input */
 #define PINB		(*(uint8_t volatile *)0x23)
@@ -131,7 +135,7 @@
 #define PORTD		(*(uint8_t volatile *)0x2B)
 
 
-/* TWI/I2C */
+/// TWI/I2C ///
 
 /* two-wire control register */
 #define TWCR		(*(uint8_t volatile *)0xBC)
@@ -155,7 +159,7 @@
 #define TWBR		(*(uint8_t volatile *)0xB8)
 
 
-/* POWER */
+/// POWER ///
 
 /* power reduction register */
 #define PRR		(*(uint8_t volatile *)0x64)
@@ -168,7 +172,7 @@
 #define PRADC		(1 << 0)
 
 
-/* TIMER/COUNTER */
+/// TIMER/COUNTER ///
 
 /* values for CS% */
 #define CSx1		0x1
@@ -282,7 +286,7 @@
 #define COM_REVERSE	3
 
 
-/* USART */
+/// USART ///
 
 /* UART0 control/status register A */
 #define UCSR0A		(*(uint8_t volatile *)0xC0)
@@ -314,11 +318,13 @@
 #define CPU_FREQ	16000000
 
 
+#ifndef __ASSEMBLY__
+
 extern void sei(void);
 extern void cli(void);
 
 
-/** GPIO **/
+/// GPIO ///
 
 /* setup GPIO (builtin led mostly) */
 void gpio_init(void);
@@ -333,7 +339,7 @@ void gpio_set(uint8_t *port, uint8_t mask);
 void gpio_clr(uint8_t *port, uint8_t mask);
 
 
-/** I²C **/
+/// I²C ///
 
 /* setup and enable I²C */
 void i2c_init(void);
@@ -355,8 +361,7 @@ int i2c_scan(uint8_t *addr);
 void interrupt_twi(void);
 
 
-
-/* TIMERS */
+/// TIMERS ///
 
 /* setup timer */
 void timer0_init(int cs, int mode);
@@ -378,7 +383,7 @@ void interrupt_timer1_ovf(void);
 void interrupt_timer2_ovf(void);
 
 
-/*** UART ***/
+/// UART ///
 
 /* setup USART0 */
 void uart_init(void);
@@ -391,3 +396,7 @@ int uart_write(uint8_t const *buf, size_t sz);
 
 /* interrupt */
 void interrupt_uart(void);
+
+#endif
+
+#endif

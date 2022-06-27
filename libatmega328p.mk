@@ -1,8 +1,8 @@
 OBJCOPY = avr-objcopy
 OBJDUMP = avr-objdump
-CPP = avr-cpp -D__AVR_ATmega328P__
+CPP = avr-cpp
 CC = avr-gcc -mmcu=atmega328p
-LD = avr-ld -L/usr/local/avr/lib/avr5
+LD = avr-ld
 AR = avr-ar
 GDB = avr-gdb
 AVRDUDE = avrdude -p atmega328p -c arduino -b 115200 -P ${AVRDUDE_PORT}
@@ -15,13 +15,13 @@ flash: firmware.hex
 .S.o:
 
 firmware.elf: ${OBJ}
-	${LD} ${LDFLAGS} -Map=firmware.map -Tlibatmega328p.ld --gc-sections -static -no-stdlibs -o $@ ${OBJ}
+	${LD} ${LDFLAGS} -Map=firmware.map -Tlibatmega328p.ld --gc-sections -static -nostdlib -o $@ ${OBJ}
 
 .c.o:
-	${CC} ${CPPFLAGS} -ffunction-sections -fdata-sections ${CFLAGS} -c -o $@ $<
+	${CC} ${CFLAGS} -ffunction-sections -fdata-sections -c -o $@ $<
 
 .S.o:
-	${CC} ${CPPFLAGS} ${CFLAGS} -c -o $@ $<
+	${CC} ${CFLAGS} -D__ASSEMBLY__ -c -o $@ $<
 
 .elf.asm:
 	${OBJDUMP} -z -d $< >$@
