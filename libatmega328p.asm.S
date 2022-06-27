@@ -1,97 +1,15 @@
 #include "libatmega328p.h"
 
-#define XL	r26
-#define XH	r27
-#define YL	r28
-#define YH	r29
-#define ZL	r30
-#define ZH	r31
-#define zero	r1
-#define FP	Y
-#define FPL	YL
-#define FPH	YH
+.macro	.isr name
+.global	__vector_\name
+	__vector_\name:
 
-.macro	.isr vector handler
-.set	\handler, __null_handler
-.weak	\handler
-.global	\vector
-	\vector:
-	call __isr_enter
-	call \handler
-	call __isr_leave
-	reti
-.endm
-
-.section .vectors
-
-.global	__vectors
-	__vectors:
-	rjmp __reset_handler					/* 0x00 */
-	rjmp __vector_2						/* 0x04 */
-	rjmp __vector_3						/* 0x08 */
-	rjmp __vector_4						/* 0x0C */
-	rjmp __vector_5						/* 0x10 */
-	rjmp __vector_6						/* 0x14 */
-	rjmp __vector_7						/* 0x18 */
-	rjmp __vector_8						/* 0x1C */
-	rjmp __vector_9						/* 0x20 */
-	rjmp __vector_10					/* 0x24 */
-	rjmp __vector_11					/* 0x28 */
-	rjmp __vector_12					/* 0x2C */
-	rjmp __vector_13					/* 0x30 */
-	rjmp __vector_14					/* 0x34 */
-	rjmp __vector_15					/* 0x38 */
-	rjmp __vector_16					/* 0x3C */
-	rjmp __vector_17					/* 0x40 */
-	rjmp __vector_18					/* 0x44 */
-	rjmp __vector_19					/* 0x48 */
-	rjmp __vector_20					/* 0x4C */
-	rjmp __vector_21					/* 0x50 */
-	rjmp __vector_22					/* 0x54 */
-	rjmp __vector_23					/* 0x58 */
-	rjmp __vector_24					/* 0x5C */
-	rjmp __vector_25					/* 0x60 */
-	rjmp __vector_26					/* 0x64 */
-
-
-.section .text
-
-.isr	__vector_2 interrupt_int0
-.isr	__vector_3 interrupt_int1
-.isr	__vector_4 interrupt_pcint0
-.isr	__vector_5 interrupt_pcint1
-.isr	__vector_6 interrupt_pcint2
-.isr	__vector_7 interrupt_wdt
-.isr	__vector_8 interrupt_timer2_compa
-.isr	__vector_9 interrupt_timer2_compb
-.isr	__vector_10 interrupt_timer2_ovf
-.isr	__vector_11 interrupt_timer1_capt
-.isr	__vector_12 interrupt_timer1_compa
-.isr	__vector_13 interrupt_timer1_compb
-.isr	__vector_14 interrupt_timer1_ovf
-.isr	__vector_15 interrupt_timer0_compa
-.isr	__vector_16 interrupt_timer0_compb
-.isr	__vector_17 interrupt_timer0_ovf
-.isr	__vector_18 interrupt_spi_stc
-.isr	__vector_19 interrupt_usart_rx
-.isr	__vector_20 interrupt_usart_udre
-.isr	__vector_21 interrupt_usart_tx
-.isr	__vector_22 interrupt_adc
-.isr	__vector_23 interrupt_ee_ready
-.isr	__vector_24 interrupt_analog_comp
-.isr	__vector_25 interrupt_twi
-.isr	__vector_26 interrupt_spm_ready
-
-.global	__isr_enter
-	__isr_enter:
-
-	/* save r0 and r1 first: we use them next */
-	push r0
+	/* save r1 first: we use them next */
 	push r1
 
 	/* save the status register onto the stack */
-	in r0, 0x3F /* SREG */
-	push r0
+	in r1, 0x3F /* SREG */
+	push r1
 
 	/* fill the "zero" register with 0 */
 	clr zero
@@ -107,14 +25,13 @@
 	push r25
 	push r26
 	push r27
+
 	/* r28 and r29 are used as a stack pointer */
 	push r30
 	push r31
 
-	ret
-
-.global	__isr_leave
-	__isr_leave:
+	/* call the actual interrupt handler*/
+	call __interrupt_\name
 
 	/* restore scratch registers */
 	pop r31
@@ -132,14 +49,73 @@
 	pop r18
 
 	/* restore the status register */
-	pop r0
-	out 0x3F, r0 /* SREG */
-
-	/* restore r1 and r0 */
 	pop r1
-	pop r0
+	out 0x3F, r1 /* SREG */
 
-	ret
+	/* restore r1 */
+	pop r1
+
+	reti
+.endm
+
+.section .vectors
+
+.global	__vectors
+	__vectors:
+	rjmp __reset_handler
+	rjmp __null_handler ; __vector_int0
+	rjmp __null_handler ; __vector_int1
+	rjmp __null_handler ; __vector_pcint0
+	rjmp __null_handler ; __vector_pcint1
+	rjmp __null_handler ; __vector_pcint2
+	rjmp __null_handler ; __vector_wdt
+	rjmp __null_handler ; __vector_timer2_compa
+	rjmp __null_handler ; __vector_timer2_compb
+	rjmp __null_handler ; __vector_timer2_ovf
+	rjmp __null_handler ; __vector_timer1_capt
+	rjmp __null_handler ; __vector_timer1_compa
+	rjmp __null_handler ; __vector_timer1_compb
+	rjmp __null_handler ; __vector_timer1_ovf
+	rjmp __null_handler ; __vector_timer0_compa
+	rjmp __null_handler ; __vector_timer0_compb
+	rjmp __vector_twi   ; __vector_timer0_ovf
+	rjmp __null_handler ; __vector_spi_stc
+	rjmp __null_handler ; __vector_usart_rx
+	rjmp __null_handler ; __vector_usart_udre
+	rjmp __null_handler ; __vector_usart_tx
+	rjmp __null_handler ; __vector_adc
+	rjmp __null_handler ; __vector_ee_ready
+	rjmp __null_handler ; __vector_analog_comp
+	rjmp __null_handler ; __vector_twi
+	rjmp __null_handler ; __vector_spm_ready
+
+;.isr	int0
+;.isr	int1
+;.isr	pcint0
+;.isr	pcint1
+;.isr	pcint2
+;.isr	wdt
+;.isr	timer2_compa
+;.isr	timer2_compb
+;.isr	timer2_ovf
+;.isr	timer1_capt
+;.isr	timer1_compa
+;.isr	timer1_compb
+;.isr	timer1_ovf
+;.isr	timer0_compa
+;.isr	timer0_compb
+;.isr	timer0_ovf
+;.isr	spi_stc
+;.isr	usart_rx
+;.isr	usart_udre
+;.isr	usart_tx
+;.isr	adc
+;.isr	ee_ready
+;.isr	analog_comp
+.isr	twi
+;.isr	spm_ready
+
+.section .text
 
 .global	sei
 	sei:

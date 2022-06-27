@@ -22,7 +22,6 @@ __reset_handler(void)
 	for (int volatile i = 0 ;; i++);
 }
 
-/* so that the debugger can immediately see which fault was triggered */
 void
 __null_handler(void)
 {
@@ -50,8 +49,8 @@ adc_read(uint8_t admux, uint8_t ref)
 {
 	adc_status = 1;
 
-        /* trigger an ADC conversion on portA pin7 with internal
-         * reference voltage and a left-adjusted number */
+	/* trigger an ADC conversion on portA pin7 with internal
+	 * reference voltage and a left-adjusted number */
 	ADMUX = MUX(admux) | REFS(ref) | 0*ADLAR;
 	ADCSRA |= 1*ADSC;
 
@@ -60,60 +59,38 @@ adc_read(uint8_t admux, uint8_t ref)
 }
 
 void
-interrupt_adc(void)
+__interrupt_adc(void)
 {
 	adc_value = *ADC;
 	adc_status = 0;
 }
 
-
-/// GPIO ///
-
-void
-gpio_init(void)
-{
-	/* set direction of pin5 to "out" */
-	DDRB |= 1<<5;
-}
-
-void
-gpio_set(uint8_t *port, uint8_t mask)
-{
-	*port |= mask;
-}
-
-void
-gpio_clr(uint8_t *port, uint8_t mask)
-{
-	*port &= ~mask;
-}
+#endif
 
 
 /// I2C ///
 
-enum {
-	I2C_START_OK = 0x08,
-	I2C_REP_START_OK = 0x10,
-	I2C_WR_SLA_ACK = 0x18,
-	I2C_WR_SLA_NACK = 0x20,
-	I2C_WR_DATA_ACK = 0x28,
-	I2C_WR_DATA_NACK = 0x30,
-	I2C_RD_SLA_ACK = 0x40,
-	I2C_RD_SLA_NACK = 0x48,
-	I2C_RD_DATA_ACK = 0x50,
-	I2C_RD_DATA_NACK = 0x58,
-	I2C_ARB_LOST = 0x38,
-};
+
+#define I2C_START_OK		0x08
+#define I2C_REP_START_OK	0x10
+#define I2C_WR_SLA_ACK		0x18
+#define I2C_WR_SLA_NACK		0x20
+#define I2C_WR_DATA_ACK		0x28
+#define I2C_WR_DATA_NACK	0x30
+#define I2C_RD_SLA_ACK		0x40
+#define I2C_RD_SLA_NACK		0x48
+#define I2C_RD_DATA_ACK		0x50
+#define I2C_RD_DATA_NACK	0x58
+#define I2C_ARB_LOST		0x38
+
 
 #define	I2C_STOP	(TWINT | TWSTO)
 #define	I2C_CONT	(TWINT | TWEN | TWIE)
-#define	I2C_START	(I2C_CONT | TWSTA)
-#define	I2C_ACK		(I2C_CONT | TWEA)
-#define	I2C_NACK	(I2C_CONT)
+#define	I2C_START	(TWINT | TWEN | TWIE | TWSTA)
+#define	I2C_ACK		(TWINT | TWEN | TWIE | TWEA)
+#define	I2C_NACK	(TWINT | TWEN | TWIE)
 
-#ifndef I2C_SCL_FREQ
 #define I2C_SCL_FREQ	(10*kHz)
-#endif
 
 static uint8_t i2c_addr;
 static uint8_t *i2c_buf;
@@ -123,23 +100,16 @@ static volatile int i2c_status;
 void
 i2c_init(void)
 {
-	uint8_t map[] = { 1, 4, 16, 64 }, presc;
+	uint8_t presc[] = { 1, 3, 5, 7 };
 
 	/* disable power reduction for TWI */
 	PRR &= ~PRTWI;
 
 	/* I2C_SCL_FREQ = CPU_FREQ / (16 + 2 * TWBR * presc) */
-	presc = map[TWSR & TWPS(3)];
-	TWBR = (CPU_FREQ / I2C_SCL_FREQ - 16) / (2 * presc);
+	TWBR = (CPU_FREQ / I2C_SCL_FREQ - 16) >> presc[TWSR & TWPS(3)];
 
 	/* setup an internal pull-up resistor on the bus */
 	PORTC |= 1<<4 | 1<<5;
-}
-
-static void
-i2c_start(void)
-{
-	TWCR = START;
 }
 
 int
@@ -151,7 +121,7 @@ i2c_read(uint8_t addr, uint8_t *buf, size_t sz)
 	i2c_i = 0;
 	i2c_status = 1;
 
-	i2c_start();
+	TWCR = I2C_START;
 	while (i2c_status == 1);
 	assert(i2c_status == -1 || i2c_i == i2c_sz);
 	return i2c_status;
@@ -166,7 +136,7 @@ i2c_write(uint8_t addr, uint8_t const *buf, size_t sz)
 	i2c_i = 0;
 	i2c_status = 1;
 
-	i2c_start();
+	TWCR = I2C_START;
 	while (i2c_status == 1);
 	assert(i2c_status == -1 || i2c_i == i2c_sz);
 	return i2c_status;
@@ -182,7 +152,7 @@ i2c_scan(uint8_t *addr)
 }
 
 void
-interrupt_twi(void)
+__interrupt_twi(void)
 {
 	switch (TWSR & 0xF8) {
 	case I2C_START_OK:
@@ -212,7 +182,7 @@ interrupt_twi(void)
 		TWCR = (i2c_i + 1 < i2c_sz) ? I2C_ACK : I2C_NACK;
 		break;
 	case I2C_RD_SLA_NACK:
-		TWCR = STOP;
+		TWCR = I2C_STOP;
 		i2c_status = -1;
 		break;
 	case I2C_RD_DATA_ACK:
@@ -341,19 +311,19 @@ timer_sleep(uint64_t us)
 }
 
 void
-interrupt_timer0_ovf(void)
+__interrupt_timer0_ovf(void)
 {
 	timer0_ovf++;
 }
 
 void
-interrupt_timer1_ovf(void)
+__interrupt_timer1_ovf(void)
 {
 	timer1_ovf++;
 }
 
 void
-interrupt_timer2_ovf(void)
+__interrupt_timer2_ovf(void)
 {
 	timer2_ovf++;
 }
@@ -414,7 +384,7 @@ uart_write(uint8_t const *buf, size_t sz)
 }
 
 void
-interrupt_usart_udre(void)
+__interrupt_usart_udre(void)
 {
 	if (uart_i == uart_sz) {
 		uart_status = 0;
@@ -424,5 +394,3 @@ interrupt_usart_udre(void)
 	/* fill the data register which queue the write in hardware */
 	UDR0 = uart_buf[uart_i++];
 }
-
-#endif

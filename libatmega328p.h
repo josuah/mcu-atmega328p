@@ -318,25 +318,23 @@
 #define CPU_FREQ	16000000
 
 
-#ifndef __ASSEMBLY__
+#ifdef __ASSEMBLY__
+
+#define XL	r26
+#define XH	r27
+#define YL	r28
+#define YH	r29
+#define ZL	r30
+#define ZH	r31
+#define zero	r1
+#define FP	Y
+#define FPL	YL
+#define FPH	YH
+
+#else
 
 extern void sei(void);
 extern void cli(void);
-
-
-/// GPIO ///
-
-/* setup GPIO (builtin led mostly) */
-void gpio_init(void);
-
-/* enable or disable the builtin led */
-void gpio_led(int onoff);
-
-/* set pin up for all bits up in mask */
-void gpio_set(uint8_t *port, uint8_t mask);
-
-/* set pin down for all bits up in mask */
-void gpio_clr(uint8_t *port, uint8_t mask);
 
 
 /// I²C ///

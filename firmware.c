@@ -4,8 +4,10 @@
 int
 main(void)
 {
-	DDRB |= 1<<5;
-	PORTB |= 1<<5;
+	i2c_init();
+	sei();
+
+	for (;;) i2c_write(0x33, (uint8_t *)"123", 3);
 
 	return 0;
 }
