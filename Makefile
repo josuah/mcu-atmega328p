@@ -4,10 +4,8 @@ OBJ = firmware.o libatmega328p.o libatmega328p.asm.o libc.o
 all: firmware.elf firmware.asm
 
 clean:
-	rm -f *.[os] ${SDK}/*.[os] *.asm *.elf *.map *.hex
+	rm -f *.[os] *.asm *.elf *.map *.hex
 ocd:
 	${OPENOCD}
-gdb:
-	${GDB} -x ${SDK}/script.gdb
 
 include libatmega328p.mk

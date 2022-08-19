@@ -1,9 +1,6 @@
 OBJCOPY = avr-objcopy
 OBJDUMP = avr-objdump
-CPP = avr-cpp
 CC = avr-gcc -mmcu=atmega328p
-AR = avr-ar
-GDB = avr-gdb
 AVRDUDE = avrdude -p atmega328p -c arduino -b 115200 -P /dev/ttyU0
 
 flash: firmware.hex
